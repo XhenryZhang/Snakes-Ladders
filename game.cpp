@@ -1,6 +1,6 @@
 // game.cpp
 // Implements class Game
-// Author: Xinyi Zhang - 3/13/2020
+// Author: Xinyi Zhang - 3/17/2020
 
 #include "game.h"
 #include <iostream>
@@ -40,60 +40,29 @@ std::string Game::solve() {
     distance[1] = 0;
 
     bool firstLadder = false;
+    int nextMove = 1;
     // check for ladder at position 1
-    for (int i = 0; i < numLadders; i++) {
-        if (1 == ladderStart[i]) {
-            visited[ladderEnd[i]] = true;
-            distance[ladderEnd[i]] = 0;
-            pred[ladderEnd[i]] = std::make_pair(1, "+");
-            firstLadder = true;
-            bfsQueue.push(ladderEnd[i]);
-            break;
-        }
-    }
+    checkLadder(nextMove, 1, false, firstLadder);
 
     if (!firstLadder) {
         bfsQueue.push(1);
+    }else {
+        bfsQueue.push(nextMove);
     }
 
     while(!bfsQueue.empty()) {
         int currentVertex = bfsQueue.front();
         bfsQueue.pop();
         for (int i = 6; i >= 1; i--) { // throw the dice
-            int nextMove = currentVertex + i;
+            nextMove = currentVertex + i;
             if (nextMove <= gameSize && visited[nextMove] == false) {
                 visited[nextMove] = true;
                 distance[nextMove] = distance[currentVertex] + 1;
                 pred[nextMove] = std::make_pair(currentVertex, " ");
 
                 // check for ladder
-                bool isLadder = false;
-                
-                for (int i = 0; i < numLadders; i++) {
-                    if (nextMove == ladderStart[i]) {
-                        nextMove = ladderEnd[i];
-                        isLadder = true;
-                        // std::cout << "ladder found, moving from " << ladderStart[i] << " to " << nextMove << std::endl;
-                        distance[nextMove] = distance[currentVertex] + 1;
-                        visited[nextMove] = true;
-                        pred[nextMove] = std::make_pair(ladderStart[i], "+");
-                        break;
-                    }
-                }
-
-                // check for snake
-                if (!isLadder) {
-                    for (int i = 0; i < numSnakes; i++) {
-                        if (nextMove == snakeStart[i]) {
-                            nextMove = snakeEnd[i];
-                            // std::cout << "ladder found, moving from " << snakeStart[i] << " to " << nextMove << std::endl;
-                            distance[nextMove] = distance[currentVertex] + 1;
-                            visited[nextMove] = true;
-                            pred[nextMove] = std::make_pair(snakeStart[i], "-");
-                            break;
-                        }
-                    }
-                }
+                checkLadder(nextMove, currentVertex, false, firstLadder);
+                checkSnake(nextMove, currentVertex, false);
 
                 bfsQueue.push(nextMove);
 
@@ -117,6 +86,73 @@ Game::~Game() {
 // public member
 
 // private member
+void Game::checkLadder(int &nextMove, int currentVertex, bool chain, bool& firstLadder) {
+    bool ladderFound = false;
+
+    for (int i = 0; i < numLadders; i++) {
+        if (nextMove == ladderStart[i]) {
+            ladderFound = true;
+            // case if first square is ladder
+            if (nextMove == 1) {
+                firstLadder = true;
+                distance[currentVertex]--; // subtract, not in chain, but no step is made from a previous move
+            }
+            nextMove = ladderEnd[i];
+            
+            if (chain) {
+                distance[nextMove] = distance[currentVertex]; // if in a chain, move count doesn't change, as you automatically move up the ladder
+                pred[nextMove] = std::make_pair(ladderStart[i], " " + std::to_string(ladderStart[i]) + "+");
+            }else {
+                distance[nextMove] = distance[currentVertex] + 1; // if not in a chain, a step is made from previous move
+                pred[nextMove] = std::make_pair(ladderStart[i], "+");
+            }
+
+            visited[nextMove] = true;
+        
+            break;
+        }
+    }
+
+    if (ladderFound) {
+        currentVertex = nextMove;
+        checkLadder(nextMove, currentVertex, true, firstLadder);
+        checkSnake(nextMove, currentVertex, true);
+    }else {
+        return;
+    }
+}
+
+void Game::checkSnake(int &nextMove, int currentVertex, bool chain) {
+    bool snakeFound = false;
+    for (int i = 0; i < numSnakes; i++) {
+        if (nextMove == snakeStart[i]) {
+            snakeFound = true;
+            nextMove = snakeEnd[i];
+            // std::cout << "ladder found, moving from " << snakeStart[i] << " to " << nextMove << std::endl;
+
+            if (chain) {
+                distance[nextMove] = distance[currentVertex];
+                pred[nextMove] = std::make_pair(snakeStart[i], " " + std::to_string(snakeStart[i]) + "-");
+            }else {
+                distance[nextMove] = distance[currentVertex] + 1;
+                pred[nextMove] = std::make_pair(snakeStart[i], "-");
+            }
+
+            visited[nextMove] = true;
+            break;
+        }
+    }
+
+    if (snakeFound) {
+        currentVertex = nextMove;
+        bool placeHolder = true;
+        checkLadder(nextMove, currentVertex, true, placeHolder);
+        checkSnake(nextMove, currentVertex, true);
+    }else {
+        return;
+    }
+}
+
 std::string Game::output() const {
     std::string output = "";
     output += std::to_string(distance[gameSize]);
@@ -140,7 +176,6 @@ std::string Game::output() const {
     }
 
     output += '\n';
-
     return output;
 }
 

@@ -1,6 +1,6 @@
 // snl.cpp
 // Driver class
-// Author: Xinyi Zhang, 3/13/2020
+// Author: Xinyi Zhang, 3/17/2020
 
 #include "game.h"
 #include <iostream>

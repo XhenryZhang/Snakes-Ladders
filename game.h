@@ -20,6 +20,8 @@ public:
     
 private:
     std::string output() const; // returns output after board is solved
+    void checkLadder(int &nextMove, int currentVertex, bool chain, bool& firstLadder);
+    void checkSnake(int &nextMove, int currentVertex, bool chain);
 
     int* snakeStart;
     int* snakeEnd;
