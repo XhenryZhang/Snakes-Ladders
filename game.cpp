@@ -101,7 +101,6 @@ void Game::checkLadderSnake(int &nextMove, int currentVertex, bool chain, bool &
             // case if first square is ladder
             if (nextMove == 1) {
                 firstLadder = true;
-                distance[currentVertex]--; // subtract, not in chain, but no step is made from a previous move
             }
 
             nextMove = ladderEnd[i];
