@@ -41,32 +41,31 @@ int main(int argc, char* argv[]) {
                 inputIndex++; // inputIndex is newline sequence
             }
 
-            // std::cout << command << std::endl;
-
             if (!(i == numGames - 1 && j == 2)) {
                 inputIndex++; // go to next line
             }
             
-            command += ' ';
-            std::stringstream parser(command);
-            std::vector<int> seq;
-            while(getline(parser, med, ' ')) {
-                seq.push_back(std::stoi(med));
-            }
+            if (command != "") {
+                command += ' ';
+                std::stringstream parser(command);
+                std::vector<int> seq;
+                while(getline(parser, med, ' ')) {
+                    seq.push_back(std::stoi(med));
+                }
 
-            if (j == 0) {
-                // set lengths of snake and ladder array of i
-                boardSize = seq[0] * seq[0];
-                ladderNum = seq[1];
-                snakeNum = seq[2];
-            }else if (j == 1) {
-                // modify adjacency list of game ladder
-                ladders = seq;
-            }else if (j == 2) {
-                // modify adjacency list of game snake
-                snakes = seq;
+                if (j == 0) {
+                    // set lengths of snake and ladder array of i
+                    boardSize = seq[0] * seq[0];
+                    ladderNum = seq[1];
+                    snakeNum = seq[2];
+                }else if (j == 1) {
+                    // modify adjacency list of game ladder
+                    ladders = seq;
+                }else if (j == 2) {
+                    // modify adjacency list of game snake
+                    snakes = seq;
+                }
             }
-
             command = "";
         }
         Game* myGame = new Game(boardSize, ladderNum, snakeNum, ladders, snakes);
